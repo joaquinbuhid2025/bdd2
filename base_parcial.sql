@@ -6,6 +6,12 @@ CREATE TABLE MEDICAMENTOS(
 	MedMonodroga VARCHAR(20),
 )
 
+CREATE TABLE LOGG(
+	ObjetoID INT,
+	Operacion VARCHAR(20),
+	FechaHora DATETIME
+)
+
 CREATE TABLE DISPENSAS(
 	DispensaID INT,
 	PacienteID INT,
