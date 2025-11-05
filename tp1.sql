@@ -44,9 +44,9 @@ WHERE NOT EXISTS (
     FROM A AS A_inner --segundo A
     WHERE A_inner.name = A.name  -- Comparar por nombre, no por primary_key
     AND NOT EXISTS (
-        SELECT 1
+        SELECT 1 --(ES B)
         FROM B
-        WHERE B.name = A_inner.name  -- Comparar por nombre
+        WHERE B.name = A_inner.name  -- Comparar por nombre 
     )
 );
 
