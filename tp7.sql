@@ -17,4 +17,76 @@ USE pubs
 SELECT t.title, t.price, t.price*1.3 'precio actualizado' FROM titles t
 
 -- Muestre el mayor valor de las ventas del año (ytd_sales) de todos los libros
--- de la tabla titles
+-- de la tabla titles (será asi?)
+USE pubs
+SELECT MAX(t.ytd_sales) FROM titles t
+
+--Muestre el mínimo valor de las ventas del año (ytd_sales) de todos los libros
+--de la tabla titles. (será asi?)
+USE pubs
+SELECT MIN(t.ytd_sales) FROM titles t
+
+--Muestre de de la tabla titles los registros cuyos precios están en nulo.
+SELECT title_id, title, type, pub_id,price, advance, royalty, ytd_sales, notes, pubdate FROM titles
+WHERE price IS NULL
+
+--Cuente los datos de la tabla titles, cuyo tipo (TYPE) sea business
+SELECT COUNT(1) 'titulos tipo busiess' FROM titles
+WHERE type='business'
+
+--Mostrar los Stores cuyo nombre contenga la palabra book.
+SELECT * FROM stores
+WHERE stor_name LIKE '%book%'
+
+--Mostrar los empleados con apellidos que empiezan con J o con C
+SELECT emp_id,fname,lname,job_id,job_lvl,pub_id,hire_date FROM employee
+WHERE LEFT(fname,1)='J' OR LEFT(fname,1)='C'
+
+--Reconstruya la venta con id P3087a, mostrar fecha, nombre de la tienda 
+--donde se realizó (store), el nombre del libro, precio unitario del libro y
+--subtotal
+SELECT DISTINCT s.ord_date 'fecha', st.stor_name 'nombre de la tienda', t.title 'Libro',t.price 'precio', t.price*s.qty 'subtotal' FROM sales s
+JOIN stores st ON s.stor_id=st.stor_id
+JOIN titles t ON t.title_id=s.title_id
+WHERE s.ord_num = 'P3087a'
+
+--Mostrar los títulos que superan el precio promedio de todos los títulos.
+-- nose si hacerlo asi
+SELECT t.title, t.price
+FROM titles AS t
+WHERE t.price > (SELECT AVG(price) FROM titles);
+--o asi (este es durisimo:)
+WITH t AS (
+  SELECT title, price, type,
+         AVG(price) OVER (PARTITION BY type) AS avg_type
+  FROM dbo.titles
+)
+SELECT title, type, price, avg_type
+FROM t
+WHERE price > avg_type
+ORDER BY type, price DESC;
+
+--Mostrar los autores que tengan la misma ciudad que el autor con apellido Green.
+SELECT a.au_fname, a.city
+FROM authors a
+WHERE a.city=(SELECT city FROM authors WHERE au_lname='Green')
+
+--Liste la suma de las ventas por año (ytd_sales) hasta la fecha, clasificándolas
+--por tipo (TYPE) de título (titles).
+SELECT
+  t.type,
+  SUM(t.ytd_sales) 'ytd_ventas_unidades'
+FROM titles AS t
+GROUP BY t.type
+ORDER BY t.type;
+
+--Liste las sumas de las ventas por año (ydt_sales) hasta la fecha,
+--agrupándolas por tipo (TYPE) y pub_id.
+SELECT
+  t.type,
+  t.pub_id,
+  SUM(t.ytd_sales) AS ytd_ventas_unidades
+FROM dbo.titles AS t
+GROUP BY t.type, t.pub_id
+ORDER BY t.type, t.pub_id;
+
