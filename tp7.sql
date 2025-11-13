@@ -90,3 +90,80 @@ FROM dbo.titles AS t
 GROUP BY t.type, t.pub_id
 ORDER BY t.type, t.pub_id;
 
+-- Utilizando el último ejemplo. Liste solamente los grupos cuyo pub_id sea
+-- igual a 0877. Pista, usar having
+USE pubs
+SELECT
+  t.type,
+  t.pub_id,
+  SUM(t.ytd_sales) AS ytd_ventas_unidades
+FROM dbo.titles AS t
+GROUP BY t.type, t.pub_id
+HAVING t.pub_id = '0877'   -- o 877 si es numérico
+ORDER BY t.type, t.pub_id;
+
+-- Unir las tablas stores y discounts para mostrar que tienda (stor_id) ofrece
+-- un descuento y el tipo de descuento (discounttype). Hacerlo de dos formas,
+-- con producto cartesiano y con INNER JOIN.
+--Producto cartesiano:
+USE pubs
+SELECT s.stor_id, d.discounttype FROM stores s, discounts d
+WHERE s.stor_id=d.stor_id
+--INNER JOIN:
+SELECT s.stor_id, d.discounttype FROM stores s
+INNER JOIN discounts d ON d.stor_id=s.stor_id
+
+--Utilice el mismo ejemplo anterior solo utilice la instrucción FULL OUTER
+--JOIN. Explique el resultado
+-- FULL OUTER JOIN = LEFT JOIN + RIGHT JOIN juntos.
+-- Es decir, te devuelve:
+-- Tiendas que tienen descuentos
+-- Coinciden s.stor_id = d.stor_id.
+-- Verás el stor_id y el discounttype completo.
+-- Si una tienda tiene varios descuentos, aparece repetida (una fila por cada descuento).
+USE pubs
+SELECT s.stor_id, d.discounttype FROM stores s
+FULL OUTER JOIN discounts d ON d.stor_id=s.stor_id
+
+--Utilice el mismo ejemplo anterior solo utilice en el from la instrucción LEFT
+--OUTER JOIN. Explique el resultado
+USE pubs
+SELECT s.stor_id, d.discounttype FROM stores s
+LEFT OUTER JOIN discounts d ON d.stor_id=s.stor_id
+--Va a mostrar todas las tiendas, pero si no hay descuentos, no aparecerá ninguna fila.
+
+-- Utilice el mismo ejemplo anterior solo utilice en el from la instrucción RIGHT
+-- OUTER JOIN. Explique el resultado.
+USE pubs
+SELECT s.stor_id, d.discounttype FROM stores s
+RIGHT OUTER JOIN discounts d ON d.stor_id=s.stor_id
+--Va a mostrar todas las tiendas, pero si no hay descuentos, aparecerá una fila
+
+-- Listar los tipos de títulos (type), ordenados por cantidad de ventas
+-- realizadas (sales.qty). Solo muestre aquellos que vendieron más de 60
+-- unidades:
+USE pubs
+SELECT t.type, s.qty FROM titles t
+JOIN sales s ON s.title_id=t.title_id
+WHERE s.qty>60
+ORDER BY s.qty
+
+-- Listado de cantidad de libros vendidos por año. Ordenarlo:
+USE pubs
+SELECT YEAR(s.ord_date), count(s.ord_date) FROM sales s
+GROUP BY YEAR(s.ord_date)
+
+-- Listar el ranking de cantidad de ventas por Nombre de Publishers
+USE pubs;
+SELECT 
+    p.pub_name,
+    SUM(s.qty) AS total_ventas
+FROM publishers p
+INNER JOIN titles AS t
+    ON p.pub_id = t.pub_id
+INNER JOIN sales AS s
+    ON t.title_id = s.title_id
+GROUP BY 
+    p.pub_name
+ORDER BY 
+    total_ventas DESC;
