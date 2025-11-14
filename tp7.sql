@@ -167,3 +167,11 @@ GROUP BY
     p.pub_name
 ORDER BY 
     total_ventas DESC;
+
+--Listar el ranking de cantidad de ventas por Nombre de Tiendas (stores)
+USE pubs
+SELECT s.stor_name, COUNT(sa.stor_id) as ventas FROM stores s
+JOIN sales sa ON sa.stor_id=s.stor_id
+GROUP BY s.stor_name
+ORDER BY ventas DESC
+
