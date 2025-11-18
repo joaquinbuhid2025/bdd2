@@ -159,3 +159,61 @@ DELETE FROM paises WHERE PAIS_ID = 'AR'
 -- The statement has been terminated.
 -- Completion time: 2025-11-17T16:23:50.3341788-03:00
 
+--4. Transacciones anidadas.
+--https://programacion.net/articulo/transacciones_en_sql_server_299
+--Ejemplo:
+--a) Escribir una transacción TrInslocal que realiza lo siguiente:
+--Inserta una nueva región (Sudamerica) en la tabla regiones
+--Inserta una nuevo Pais de la tabla países (Uruguay)
+
+--b) Escribir una transacción trUplocal que realiza lo siguiente:
+--Actualiza el pais_id a Uruguay a todas las localidades con loc_id > 1600
+--Actualiza el nombre de Ciudad a “Maldonado “a las localidades que tengan los
+--siguientes loc_id 1700,1800,2500
+
+--c) Escribirlas en forma anidadas, el inicio de la trUlocal debe ir dentro de la transacción
+--Trinslocal
+--d) Verifique los valores de la variable @@trancount cada vez que realice un BEGIN, un
+--ROLLBACK y un COMMIT
+--e) Verifique que ocurre cuando realiza un dentro de la transacción trUplocal un
+--ROLLBACK
+--f) Verifique que efecto realiza un solo COMMIT y que necesita hacer para que ambas
+--transacciones se confirmen.
+
+--a)
+USE RRHH
+BEGIN TRANSACTION TrInslocal
+	BEGIN TRY
+		DECLARE @NUEVO_ID INT
+		DECLARE @region VARCHAR
+		DECLARE @pais VARCHAR
+		DECLARE @alias_pais VARCHAR
+		SELECT @NUEVO_ID = ISNULL((MAX(REG_ID)), 0) + 1 FROM regiones
+		INSERT INTO regiones values(@NUEVO_ID,@region)
+		BEGIN TRANSACTION
+			BEGIN TRY
+				INSERT INTO paises values(@alias_pais,@pais,@NUEVO_ID)
+				COMMIT TRANSACTION
+			END TRY
+			BEGIN CATCH
+				SELECT
+				ERROR_NUMBER() AS ErrorNumber,
+				ERROR_SEVERITY() AS ErrorSeverity,
+				ERROR_STATE() AS ErrorState,
+				ERROR_PROCEDURE() AS ErrorProcedure,
+				ERROR_LINE() AS ErrorLine,
+				ERROR_MESSAGE() AS ErrorMessage;
+				ROLLBACK TRANSACTION
+			END CATCH
+		COMMIT TRANSACTION
+	END TRY
+	BEGIN CATCH
+		SELECT
+		ERROR_NUMBER() AS ErrorNumber,
+		ERROR_SEVERITY() AS ErrorSeverity,
+		ERROR_STATE() AS ErrorState,
+		ERROR_PROCEDURE() AS ErrorProcedure,
+		ERROR_LINE() AS ErrorLine,
+		ERROR_MESSAGE() AS ErrorMessage;
+		ROLLBACK TRANSACTION
+	END CATCH
