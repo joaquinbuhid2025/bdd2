@@ -25,6 +25,4 @@ SELECT C.ClinicaDesc, D.Fecha, C.ProvinciaID
 	WHERE C.ProvinciaID = @ProvinciaID AND (@Fecha IS NULL OR D.Fecha = @Fecha)
 
 end
-
 exec getdatte3 @ProvinciaID=1, @Fecha = '09/01/2023'
-

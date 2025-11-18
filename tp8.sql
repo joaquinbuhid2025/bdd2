@@ -182,38 +182,73 @@ DELETE FROM paises WHERE PAIS_ID = 'AR'
 
 --a)
 USE RRHH
+PRINT '@@TRANCOUNT inicial: ' + CAST(@@TRANCOUNT AS VARCHAR)
+
 BEGIN TRANSACTION TrInslocal
 	BEGIN TRY
 		DECLARE @NUEVO_ID INT
-		DECLARE @region VARCHAR
-		DECLARE @pais VARCHAR
-		DECLARE @alias_pais VARCHAR
+		DECLARE @region VARCHAR(100)
+		DECLARE @pais VARCHAR(100)
+		DECLARE @alias_pais VARCHAR(10)
+		
+		PRINT '@@TRANCOUNT después de TrInslocal: ' + CAST(@@TRANCOUNT AS VARCHAR)
+		
 		SELECT @NUEVO_ID = ISNULL((MAX(REG_ID)), 0) + 1 FROM regiones
-		INSERT INTO regiones values(@NUEVO_ID,@region)
-		BEGIN TRANSACTION
-			BEGIN TRY
-				INSERT INTO paises values(@alias_pais,@pais,@NUEVO_ID)
-				COMMIT TRANSACTION
-			END TRY
-			BEGIN CATCH
-				SELECT
+		INSERT INTO regiones VALUES(@NUEVO_ID, @region)
+		
+		-- Guardar punto antes de la "transacción interna"
+		SAVE TRANSACTION TrPaises
+		
+		BEGIN TRY
+			PRINT '@@TRANCOUNT en transacción interna: ' + CAST(@@TRANCOUNT AS VARCHAR)
+			
+			INSERT INTO paises VALUES(@alias_pais, @pais, @NUEVO_ID)
+			
+			-- No hacer COMMIT aquí, solo continuar
+			PRINT 'Insert en paises exitoso'
+			PRINT '@@TRANCOUNT después de insert paises: ' + CAST(@@TRANCOUNT AS VARCHAR)
+			
+		END TRY
+		BEGIN CATCH
+			-- Rollback solo al punto de guardado
+			ROLLBACK TRANSACTION TrPaises
+			
+			SELECT
 				ERROR_NUMBER() AS ErrorNumber,
 				ERROR_SEVERITY() AS ErrorSeverity,
 				ERROR_STATE() AS ErrorState,
 				ERROR_PROCEDURE() AS ErrorProcedure,
 				ERROR_LINE() AS ErrorLine,
 				ERROR_MESSAGE() AS ErrorMessage;
-				ROLLBACK TRANSACTION
-			END CATCH
-		COMMIT TRANSACTION
+			
+			PRINT 'Error en transacción interna, rollback a TrPaises'
+			PRINT '@@TRANCOUNT después de rollback interno: ' + CAST(@@TRANCOUNT AS VARCHAR)
+			
+			-- Re-lanzar el error para que lo capture el CATCH externo
+			-- THROW; -- Descomentar si quieres que falle toda la transacción
+		END CATCH
+		
+		-- Commit de la transacción principal
+		COMMIT TRANSACTION TrInslocal
+		PRINT 'Transacción principal completada'
+		PRINT '@@TRANCOUNT final: ' + CAST(@@TRANCOUNT AS VARCHAR)
+		
 	END TRY
 	BEGIN CATCH
+		-- Rollback de toda la transacción si hay error
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION TrInslocal
+			
 		SELECT
-		ERROR_NUMBER() AS ErrorNumber,
-		ERROR_SEVERITY() AS ErrorSeverity,
-		ERROR_STATE() AS ErrorState,
-		ERROR_PROCEDURE() AS ErrorProcedure,
-		ERROR_LINE() AS ErrorLine,
-		ERROR_MESSAGE() AS ErrorMessage;
-		ROLLBACK TRANSACTION
+			ERROR_NUMBER() AS ErrorNumber,
+			ERROR_SEVERITY() AS ErrorSeverity,
+			ERROR_STATE() AS ErrorState,
+			ERROR_PROCEDURE() AS ErrorProcedure,
+			ERROR_LINE() AS ErrorLine,
+			ERROR_MESSAGE() AS ErrorMessage;
+		
+		PRINT 'Error en transacción principal'
+		PRINT '@@TRANCOUNT después de rollback: ' + CAST(@@TRANCOUNT AS VARCHAR)
 	END CATCH
+
+	
