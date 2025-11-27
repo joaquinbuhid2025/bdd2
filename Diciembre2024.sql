@@ -22,7 +22,7 @@ CREATE TABLE dbo.MOVIMIENTOS (
     MovimientoID    INT      NOT NULL PRIMARY KEY,
     ConceptoID      INT      NOT NULL,
     CajaID          INT      NOT NULL,
-    Monto           INT      NOT NULL,      -- si usás centavos: DECIMAL(18,2)
+    Monto           INT      NOT NULL,      -- si usï¿½s centavos: DECIMAL(18,2)
     Fecha           DATE     NOT NULL,
     MovimientoOrigID INT     NOT NULL DEFAULT(0), -- 0 = original; >0 = id del mov. original ajustado
     CONSTRAINT FK_Mov_Concepto FOREIGN KEY (ConceptoID) REFERENCES dbo.CONCEPTOS(ConceptoID),
@@ -31,7 +31,7 @@ CREATE TABLE dbo.MOVIMIENTOS (
 GO
 
 -- LOG
-CREATE TABLE dbo.LOG (
+CREATE TABLE dbo.LOGG (
     ObjetoID             INT          NOT NULL,
     OperacionDescripcion VARCHAR(200) NOT NULL,
     FechaHora            DATETIME2    NOT NULL DEFAULT SYSUTCDATETIME()
@@ -39,7 +39,7 @@ CREATE TABLE dbo.LOG (
 GO
 
 /* =======================
-   INSERTS (según enunciado)
+   INSERTS (segï¿½n enunciado)
    ======================= */
 
 -- CAJAS
@@ -59,7 +59,7 @@ INSERT INTO dbo.CONCEPTOS (ConceptoID, ConceptoDesc, ConceptoGrupo) VALUES
 (6, 'Limpieza',               'SERVICIOS');
 GO
 
--- MOVIMIENTOS  (MovimientoOrigID en 0 por defecto; ajustalo si necesitás enlazar ajustes)
+-- MOVIMIENTOS  (MovimientoOrigID en 0 por defecto; ajustalo si necesitï¿½s enlazar ajustes)
 INSERT INTO dbo.MOVIMIENTOS (MovimientoID, ConceptoID, CajaID, Monto,   Fecha,       MovimientoOrigID) VALUES
 ( 1, 1, 1,  -230000, '2024-09-01', 0),
 ( 2, 1, 1,  -270000, '2024-09-01', 0),
@@ -75,7 +75,7 @@ INSERT INTO dbo.MOVIMIENTOS (MovimientoID, ConceptoID, CajaID, Monto,   Fecha,  
 (12, 5, 3,   620000, '2024-10-03', 0);
 GO
 
--- MOVIMIENTOS  (MovimientoOrigID en 0 por defecto; ajustalo si necesitás enlazar ajustes)
+-- MOVIMIENTOS  (MovimientoOrigID en 0 por defecto; ajustalo si necesitï¿½s enlazar ajustes)
 INSERT INTO dbo.MOVIMIENTOS (MovimientoID, ConceptoID, CajaID, Monto,   Fecha,       MovimientoOrigID) VALUES
 ( 14, 1, 3,  -270000, '2024-09-01', 0)
 GO

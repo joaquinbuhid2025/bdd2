@@ -56,20 +56,3 @@ INSERT INTO DISPENSAS VALUES(7,3,4,2,'09/01/2023')
 INSERT INTO DISPENSAS VALUES(8,2,3,3,'09/01/2023')
 INSERT INTO DISPENSAS VALUES(9,2,1,4,'09/02/2023')
 INSERT INTO DISPENSAS VALUES(10,4,4,4,'09/01/2023')
-
-USE FARMACIA
-SELECT p.Nombre, p.Apellido
-FROM PACIENTES p
-WHERE NOT EXISTS (
-    -- No existe una monodroga...
-    SELECT 1
-    FROM MEDICAMENTOS m
-    WHERE NOT EXISTS (
-        -- ...que el paciente NO haya dispensado
-        SELECT 1
-        FROM DISPENSAS d
-        INNER JOIN MEDICAMENTOS m2 ON d.MedID = m2.MedID
-        WHERE d.PacienteID = p.PacienteID
-          AND m2.MedMonodroga = m.MedMonodroga
-    )
-)
